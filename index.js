@@ -76,7 +76,7 @@ async function run() {
 
     app.get("/addproducts/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
+      const query = { email };
       const result = await addProductCollection.find(query).toArray();
       res.send(result);
     });
@@ -84,6 +84,16 @@ async function run() {
     app.post("/advertiseproducts", async (req, res) => {
       const query = req.body;
       const result = await advertiseProductCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.get("/alladvertise", async (req, res) => {
+      const query = {};
+      const result = await advertiseProductCollection
+        .find(query)
+        .limit(3)
+        .sort({ _id: -1 })
+        .toArray();
       res.send(result);
     });
   } finally {
