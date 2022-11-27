@@ -33,6 +33,9 @@ async function run() {
     const addProductCollection = client
       .db("resalePhone")
       .collection("addProducts");
+    const advertiseProductCollection = client
+      .db("resalePhone")
+      .collection("advertiseProducts");
 
     app.get("/iphoneCollection", async (req, res) => {
       const query = {};
@@ -75,6 +78,12 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await addProductCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/advertiseproducts", async (req, res) => {
+      const query = req.body;
+      const result = await advertiseProductCollection.insertOne(query);
       res.send(result);
     });
   } finally {
