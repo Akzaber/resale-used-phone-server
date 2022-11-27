@@ -30,6 +30,9 @@ async function run() {
     const usedMobileCollection = client
       .db("resalePhone")
       .collection("usedPhoneCollections");
+    const addProductCollection = client
+      .db("resalePhone")
+      .collection("addProducts");
 
     app.get("/iphoneCollection", async (req, res) => {
       const query = {};
@@ -59,6 +62,19 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await usedMobileCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/addproducts", async (req, res) => {
+      const query = req.body;
+      const result = await addProductCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.get("/addproducts/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await addProductCollection.find(query).toArray();
       res.send(result);
     });
   } finally {
