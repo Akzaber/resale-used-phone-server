@@ -39,6 +39,7 @@ async function run() {
     const userBookingCollection = client
       .db("resalePhone")
       .collection("bookings");
+    const usersCollection = client.db("resalePhone").collection("users");
 
     app.get("/iphoneCollection", async (req, res) => {
       const query = {};
@@ -129,9 +130,9 @@ async function run() {
       let query = {};
       if (req.query.email) {
         query = { email: req.query.email };
+        const result = await userBookingCollection.find(query).toArray();
+        res.send(result);
       }
-      const result = await userBookingCollection.find(query).toArray();
-      res.send(result);
     });
 
     app.delete("/bookings/:id", async (req, res) => {
@@ -139,6 +140,33 @@ async function run() {
       const filter = { _id: ObjectId(id) };
       const result = await userBookingCollection.deleteOne(filter);
       res.send(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const query = req.body;
+      const result = await usersCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await usersCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      let query = {};
+      const userType = req.query.userType;
+      if (userType === "seller") {
+        query = { userType: "seller" };
+        const result = await usersCollection.find(query).toArray();
+        res.send(result);
+      } else {
+        query = { userType: "user" };
+        const result = await usersCollection.find(query).toArray();
+        res.send(result);
+      }
     });
   } finally {
   }
