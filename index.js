@@ -36,6 +36,9 @@ async function run() {
     const advertiseProductCollection = client
       .db("resalePhone")
       .collection("advertiseProducts");
+    const userBookingCollection = client
+      .db("resalePhone")
+      .collection("bookings");
 
     app.get("/iphoneCollection", async (req, res) => {
       const query = {};
@@ -68,11 +71,30 @@ async function run() {
       res.send(result);
     });
 
+    // app.post("/usedphonecategory/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   let query = {};
+    //   if (req.query.categoryName) {
+    //     query = { categoryName: req.query.categoryName, _id: ObjectId(id) };
+    //   }
+    //   const result = await usedMobileCollection.insertOne(query);
+    //   res.send(result);
+    // });
+
     app.post("/addproducts", async (req, res) => {
       const query = req.body;
       const result = await addProductCollection.insertOne(query);
       res.send(result);
     });
+
+    // app.put('/usedphonecategory/:categoryName', async(req, res) => {
+    //   const categoryName = req.params.categoryName;
+    //   const filter = {categoryName : categoryName};
+    //   const options = {upsert : true};
+    //   const updatedDoc = {
+
+    //   }
+    // })
 
     app.get("/addproducts/:email", async (req, res) => {
       const email = req.params.email;
@@ -94,6 +116,28 @@ async function run() {
         .limit(3)
         .sort({ _id: -1 })
         .toArray();
+      res.send(result);
+    });
+
+    app.post("/bookings", async (req, res) => {
+      const query = req.body;
+      const result = await userBookingCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.get("/bookings", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = { email: req.query.email };
+      }
+      const result = await userBookingCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const result = await userBookingCollection.deleteOne(filter);
       res.send(result);
     });
   } finally {
