@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
+// const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const app = express();
 
@@ -41,6 +42,22 @@ async function run() {
       .collection("bookings");
     const usersCollection = client.db("resalePhone").collection("users");
 
+    // function verifyJWT(req, res, next) {
+    //   const authHeader = req.headers.authorization;
+    //   if (!authHeader) {
+    //     return res.status(401).send("unauthorized access");
+    //   }
+
+    //   const token = authHeader.split(" ")[1];
+    //   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+    //     if (err) {
+    //       return res.status(403).send({ message: "forbidden access" });
+    //     }
+    //     req.decoded = decoded;
+    //     next();
+    //   });
+    // }
+
     app.get("/iphoneCollection", async (req, res) => {
       const query = {};
       const result = await usedIphoneCollection.find(query).toArray();
@@ -72,19 +89,26 @@ async function run() {
       res.send(result);
     });
 
-    // app.post("/usedphonecategory/:id", async (req, res) => {
-    //   const id = req.params.id;
+    // app.post("/usedphonecategory", async (req, res) => {
     //   let query = {};
-    //   if (req.query.categoryName) {
-    //     query = { categoryName: req.query.categoryName, _id: ObjectId(id) };
+    //   const categoryName = req.query.categoryName;
+    //   if (categoryName) {
+    //     query = { categoryName: categoryName };
+    //     const result = await usedMobileCollection.data.insertOne(query);
+    //     res.send(result);
     //   }
-    //   const result = await usedMobileCollection.insertOne(query);
-    //   res.send(result);
     // });
 
     app.post("/addproducts", async (req, res) => {
       const query = req.body;
       const result = await addProductCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.delete("/addproducts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await addProductCollection.deleteOne(query);
       res.send(result);
     });
 
@@ -127,12 +151,16 @@ async function run() {
     });
 
     app.get("/bookings", async (req, res) => {
-      let query = {};
-      if (req.query.email) {
-        query = { email: req.query.email };
-        const result = await userBookingCollection.find(query).toArray();
-        res.send(result);
-      }
+      const email = req.query.email;
+      // const decodedEmail = req.decoded.email;
+
+      // if (email !== decodedEmail) {
+      //   return res.status(403).send({ message: "forbidden access" });
+      // }
+
+      const query = { email: email };
+      const result = await userBookingCollection.find(query).toArray();
+      res.send(result);
     });
 
     app.delete("/bookings/:id", async (req, res) => {
@@ -142,11 +170,43 @@ async function run() {
       res.send(result);
     });
 
+    // app.get("/jwt", async (req, res) => {
+    //   const email = req.query.email;
+    //   const filter = { email: email };
+    //   const user = await usersCollection.findOne(filter);
+    //   if (user && user.email) {
+    //     const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, {
+    //       expiresIn: "1h",
+    //     });
+    //     return res.send({ accessToken: token });
+    //   }
+    //   res.status(403).send({ accessToken: "" });
+    // });
+
     app.post("/users", async (req, res) => {
       const query = req.body;
       const result = await usersCollection.insertOne(query);
       res.send(result);
     });
+
+    // app.put("/users", async (req, res) => {
+    //   const userType = req.query.userType;
+    //   if (userType === "user") {
+    //     filter = { userType: "user" };
+    //     const options = { upsert: true };
+    //     const updatedDoc = {
+    //       $set: {
+    //         role: "admin",
+    //       },
+    //     };
+    //     const result = await usersCollection.updateOne(
+    //       filter,
+    //       options,
+    //       updatedDoc
+    //     );
+    //     res.send(result);
+    //   }
+    // });
 
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
@@ -160,11 +220,17 @@ async function run() {
       const userType = req.query.userType;
       if (userType === "seller") {
         query = { userType: "seller" };
-        const result = await usersCollection.find(query).toArray();
+        const result = await usersCollection
+          .find(query)
+          .sort({ _id: -1 })
+          .toArray();
         res.send(result);
       } else {
         query = { userType: "user" };
-        const result = await usersCollection.find(query).toArray();
+        const result = await usersCollection
+          .find(query)
+          .sort({ _id: -1 })
+          .toArray();
         res.send(result);
       }
     });
